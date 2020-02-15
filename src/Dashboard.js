@@ -3,7 +3,10 @@ import io from 'socket.io-client';
 import SocketIOFileUpload from 'socketio-file-upload';
 import { CardDeck, Button, Row, Col, Container } from 'reactstrap';
 
-const socket = io('http://localhost:4001');
+const endpoint = window.location.hostname + ':4001';
+const socket = io(endpoint);
+
+// const socket = io('http://localhost:4001');
 
 export default class Dashboard extends Component {
 
