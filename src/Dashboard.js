@@ -5,6 +5,9 @@ import { CardDeck, Button, Row, Col, Container } from 'reactstrap';
 
 const socket = io('http://localhost');
 
+// CORS
+io.origins('*:*');
+
 export default class Dashboard extends Component {
 
 	state = {
