@@ -3,10 +3,11 @@ import io from 'socket.io-client';
 import SocketIOFileUpload from 'socketio-file-upload';
 import { CardDeck, Button, Row, Col, Container } from 'reactstrap';
 
-const socket = io('http://localhost');
-
 // CORS
 io.origins('*:*');
+const socket = io('http://localhost');
+
+
 
 export default class Dashboard extends Component {
 
