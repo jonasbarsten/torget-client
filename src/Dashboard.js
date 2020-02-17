@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import io from 'socket.io-client';
 import SocketIOFileUpload from 'socketio-file-upload';
-import { Input, Button, Row, Col, Container, Table, Progress } from 'reactstrap';
+import { Input, Button, Row, Col, Container, Table, Progress, Badge } from 'reactstrap';
 import { FiPlay, FiTrash } from 'react-icons/fi';
+import { FaStop } from 'react-icons/fa';
 
 const socket = io('torgetserver.kristofferlo.no');
 
@@ -20,8 +21,10 @@ export default class Dashboard extends Component {
 	}
 
 	restartServer() {
-		console.log('boom');
-    socket.emit('restart');
+		const res = window.confirm('Sikker på at du vil restarte PIen?');
+		if (res) {
+    	socket.emit('restart');
+    };
   }
 
 	stopAll() {
@@ -40,6 +43,10 @@ export default class Dashboard extends Component {
   	socket.emit('playFile', fileName);
   }
 
+  playRandomComposition() {
+  	socket.emit('playRandomComposition');
+  }
+
 	render () {
 
 		const { socketData } = this.state;
@@ -47,11 +54,29 @@ export default class Dashboard extends Component {
 		const ready = socketData.ping ? true : false;
 		const files = ready ? socketData.files : [];
 		const status = ready ? '' : <h1>No connection to server ...</h1>;
-		const uploading = (socketData && socketData.uploadProgress && socketData.uploadProgress < 100 && socketData.uploadProgress > 0) ? <Progress value={socketData.uploadProgress} /> : null
+		const uploading = (socketData && socketData.uploadProgress && socketData.uploadProgress < 100 && socketData.uploadProgress > 0) ? <Progress value={socketData.uploadProgress} /> : null;
+		const diskAvaliable = (socketData && socketData.diskUsage) ? socketData.diskUsage.available : 0;
+		const diskTotal = (socketData && socketData.diskUsage) ? socketData.diskUsage.total : 0;
+		const diskUsage = ((diskTotal - diskAvaliable) / diskTotal) * 100;
+		let ips = (socketData && socketData.network) ? socketData.network : [];
+		const indexOfVPNIp = ips.indexOf('10.14.1.2');
+		if (indexOfVPNIp > -1) {
+		  ips.splice(indexOfVPNIp, 1);
+		};
 
 		return (
 			<div>
 				<Container>
+
+					<Row>
+						<Col style={{marginTop: '5px'}}>
+							<Badge >OSC</Badge>
+
+							{ips.map((ip) => {
+								return <Badge color="light" style={{marginRight: '10px'}} key={ip}>{ip}:8050</Badge>
+							})}
+						</Col>
+					</Row>
 
 					<Row style={{marginTop: '20px', marginBottom: '20px'}}>
 						<Col>
@@ -87,6 +112,14 @@ export default class Dashboard extends Component {
 											</tr>
 										);
 									})}
+									<tr>
+										<td>
+											<Button color="primary" onClick={this.playRandomComposition}>Play random 20 min composition</Button>
+										</td>
+										<td>
+											<Button color="danger" onClick={this.stopAll}><FaStop /> Stop all</Button>
+										</td>
+									</tr>
 								</tbody>
 							</Table>
 						</Col>
@@ -94,10 +127,7 @@ export default class Dashboard extends Component {
 
 					<Row>
 						<Col>
-							<Button color="danger" onClick={this.stopAll}>Stop all</Button>
-						</Col>
-						<Col>
-							<Button color="danger" onClick={this.restartServer}>Restart PI</Button>
+							<Progress style={{marginTop: '20px'}} color="success" value={diskUsage}>Disk usage</Progress>
 						</Col>
 					</Row>
 
